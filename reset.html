@@ -50,17 +50,20 @@ const ARCHIVOS = ['version.txt', 'index.html', 'index.js', 'index.service.worker
   const linea = di('bajando de nuevo… 0 de ' + ARCHIVOS.length);
   let hechos = 0;
   for (const a of ARCHIVOS) {
-    try { await fetch(a + '?v=' + Date.now(), { cache: 'reload' }); } catch (e) { /* sigue */ }
+    // **Sin cola `?v=`.** `cache:'reload'` ya saltea la caché y además deja la
+    // entrada nueva en ella. Agregarle una cola la convierte en OTRA url: se
+    // refresca una entrada que nadie pide y el archivo viejo sigue ahí. Pasó.
+    try { await fetch(a, { cache: 'reload' }); } catch (e) { /* sigue */ }
     linea.textContent = `bajando de nuevo… ${++hechos} de ${ARCHIVOS.length}`;
   }
   try {
-    const v = await (await fetch('version.txt?v=' + Date.now(), { cache: 'reload' })).text();
+    const v = await (await fetch('version.txt', { cache: 'reload' })).text();
     document.getElementById('version').textContent = 'versión: ' + v.trim();
   } catch (e) { document.getElementById('version').textContent = 'versión: no se pudo leer'; }
 
   di('listo');
   const ir = document.getElementById('ir');
-  ir.href = './index.html?v=' + Date.now();
+  ir.href = './index.html';
   ir.textContent = 'Jugar';
   ir.classList.remove('apagado');
 })();
