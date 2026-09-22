@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prueba de toques</title>
+<style>
+ html,body{margin:0;height:100%;overscroll-behavior:none;overflow:hidden;
+   font:600 14px/1.35 system-ui,sans-serif;background:#87c7f2;color:#3a1a12}
+ #zona{position:absolute;inset:0;touch-action:none;-webkit-user-select:none;user-select:none;
+   -webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+ #datos{position:absolute;left:8px;top:8px;right:8px;background:#f0d8c0e8;border:3px solid #481818;
+   border-radius:10px;padding:10px 12px;white-space:pre-wrap;pointer-events:none}
+ b{color:#7a2a12}
+</style>
+</head>
+<body>
+<div id="zona"></div>
+<div id="datos">tocá y arrastrá acá</div>
+<script>
+// Página de diagnóstico: NO usa Godot. Solo dice si WebKit le entrega los
+// toques a un elemento con touch-action:none, que es lo que el juego necesita.
+const z = document.getElementById('zona'), d = document.getElementById('datos');
+const n = {touchstart:0, touchmove:0, touchend:0, touchcancel:0, pointerdown:0, pointermove:0, pointercancel:0};
+let ultimo = '—', arrastre = 0, x0 = null;
+function pintar(){
+  d.innerHTML =
+    `<b>toques</b>  start ${n.touchstart}  move ${n.touchmove}  end ${n.touchend}  `
+    + `<b>cancel ${n.touchcancel}</b>\n`
+    + `<b>puntero</b> down ${n.pointerdown}  move ${n.pointermove}  cancel ${n.pointercancel}\n`
+    + `último: ${ultimo}\narrastre máximo: ${Math.round(arrastre)} px\n`
+    + `touch-action: ${getComputedStyle(z).touchAction}\n`
+    + `pantalla: ${innerWidth}×${innerHeight}  dpr ${devicePixelRatio}\n`
+    + `service worker: ${navigator.serviceWorker.controller ? 'controlando' : 'ninguno'}`;
+}
+for (const t of ['touchstart','touchmove','touchend','touchcancel']) {
+  z.addEventListener(t, (e) => {
+    n[t]++;
+    const p = e.changedTouches[0];
+    if (t === 'touchstart') { x0 = p.clientX; arrastre = 0; }
+    if (x0 !== null && p) arrastre = Math.max(arrastre, Math.abs(p.clientX - x0));
+    ultimo = `${t} en ${Math.round(p.clientX)},${Math.round(p.clientY)}`;
+    if (e.cancelable) e.preventDefault();
+    pintar();
+  }, {passive: false});
+}
+for (const t of ['pointerdown','pointermove','pointercancel']) {
+  z.addEventListener(t, () => { n[t]++; pintar(); });
+}
+pintar();
+</script>
+</body></html>

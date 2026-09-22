@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Empezar de cero</title>
+<style>
+ body{margin:0;font:600 17px/1.5 system-ui,sans-serif;background:#87c7f2;color:#3a1a12;
+      display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+ main{max-width:34rem}
+ h1{font-size:1.4rem;margin:0 0 .6rem}
+ li{margin:.25rem 0}
+ a.boton{display:inline-block;margin-top:1.2rem;background:#489048;color:#fff;
+         text-decoration:none;padding:.8rem 1.6rem;border-radius:12px;border:3px solid #2a5a2a}
+</style>
+</head>
+<body><main>
+<h1>Limpiando lo guardado…</h1>
+<ul id="pasos"></ul>
+<a class="boton" id="ir" href="./index.html">Jugar</a>
+</main>
+<script>
+// Esta página existe porque el service worker de Godot es cache-first: una
+// corrección publicada puede no llegarle nunca al teléfono, que sigue abriendo
+// la versión vieja desde la caché. Acá se borra todo y se entra limpio.
+const pasos = document.getElementById('pasos');
+const di = (t) => { const li=document.createElement('li'); li.textContent=t; pasos.appendChild(li); };
+(async () => {
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) await r.unregister();
+    di(`service workers dados de baja: ${regs.length}`);
+  } catch (e) { di('service workers: ' + e); }
+  try {
+    const ks = await caches.keys();
+    for (const k of ks) await caches.delete(k);
+    di(`cachés borradas: ${ks.length}`);
+  } catch (e) { di('cachés: ' + e); }
+  di('listo — tocá Jugar');
+  document.getElementById('ir').href = './index.html?v=' + Date.now();
+})();
+</script>
+</body></html>
