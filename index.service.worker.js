@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1790042538|4564052';
+const CACHE_VERSION = '1790043497|4370733';
 /** @type {string} */
 const CACHE_PREFIX = 'Entrega Voladora-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
