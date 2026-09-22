@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1790043497|4370733';
+const CACHE_VERSION = '1790043699|1893580';
 /** @type {string} */
 const CACHE_PREFIX = 'Entrega Voladora-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -21,10 +21,14 @@ const CACHEABLE_FILES = ["index.wasm","index.pck"];
 const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 
 self.addEventListener('install', (event) => {
+	// Agregado por tools/exportar_web.py: sin esto el worker nuevo espera a
+	// que se cierren todas las pestañas y una corrección no llega nunca.
+	self.skipWaiting();
 	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
 });
 
 self.addEventListener('activate', (event) => {
+	event.waitUntil(self.clients.claim());
 	event.waitUntil(caches.keys().then(
 		function (keys) {
 			// Remove old caches.
