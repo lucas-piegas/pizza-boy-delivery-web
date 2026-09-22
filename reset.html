@@ -5,26 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Empezar de cero</title>
 <style>
- body{margin:0;font:600 17px/1.5 system-ui,sans-serif;background:#87c7f2;color:#3a1a12;
-      display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
- main{max-width:34rem}
- h1{font-size:1.4rem;margin:0 0 .6rem}
- li{margin:.25rem 0}
- a.boton{display:inline-block;margin-top:1.2rem;background:#489048;color:#fff;
-         text-decoration:none;padding:.8rem 1.6rem;border-radius:12px;border:3px solid #2a5a2a}
+ body{margin:0;font:600 16px/1.5 system-ui,sans-serif;background:#87c7f2;color:#3a1a12;
+      display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+ main{max-width:36rem;width:100%}
+ h1{font-size:1.3rem;margin:0 0 .5rem}
+ ul{margin:.4rem 0;padding-left:1.2rem}
+ li{margin:.2rem 0}
+ #version{background:#f0d8c0;border:3px solid #481818;border-radius:10px;padding:.6rem .8rem;
+          margin:.8rem 0;font-family:ui-monospace,monospace;font-size:.95rem}
+ a.boton{display:inline-block;background:#489048;color:#fff;text-decoration:none;
+         padding:.85rem 1.8rem;border-radius:12px;border:3px solid #2a5a2a;font-size:1.1rem}
+ a.apagado{background:#9aa;border-color:#778;pointer-events:none}
 </style>
 </head>
 <body><main>
-<h1>Limpiando lo guardado…</h1>
+<h1>Empezar de cero</h1>
 <ul id="pasos"></ul>
-<a class="boton" id="ir" href="./index.html">Jugar</a>
+<div id="version">versión: …</div>
+<a class="boton apagado" id="ir" href="#">Esperá…</a>
 </main>
 <script>
-// Esta página existe porque el service worker de Godot es cache-first: una
-// corrección publicada puede no llegarle nunca al teléfono, que sigue abriendo
-// la versión vieja desde la caché. Acá se borra todo y se entra limpio.
+// **Tres cachés, no una.** Para que una corrección llegue al teléfono hay que
+// sacarse de encima: (1) el service worker de Godot, que es cache-first; (2) su
+// caché; y (3) la del propio navegador, porque GitHub Pages manda
+// `Cache-Control: max-age=600` y durante diez minutos ni pregunta. La tercera es
+// la que hacía que `reset.html` no alcanzara: se bajaba el index viejo igual.
+// `cache: 'reload'` es lo que la saltea y además la deja con la copia nueva.
 const pasos = document.getElementById('pasos');
-const di = (t) => { const li=document.createElement('li'); li.textContent=t; pasos.appendChild(li); };
+const di = (t) => { const li = document.createElement('li'); li.textContent = t; pasos.appendChild(li); return li; };
+const ARCHIVOS = ['version.txt', 'index.html', 'index.js', 'index.service.worker.js',
+                  'index.manifest.json', 'index.pck', 'index.wasm'];
 (async () => {
   try {
     const regs = await navigator.serviceWorker.getRegistrations();
@@ -36,8 +46,23 @@ const di = (t) => { const li=document.createElement('li'); li.textContent=t; pas
     for (const k of ks) await caches.delete(k);
     di(`cachés borradas: ${ks.length}`);
   } catch (e) { di('cachés: ' + e); }
-  di('listo — tocá Jugar');
-  document.getElementById('ir').href = './index.html?v=' + Date.now();
+
+  const linea = di('bajando de nuevo… 0 de ' + ARCHIVOS.length);
+  let hechos = 0;
+  for (const a of ARCHIVOS) {
+    try { await fetch(a + '?v=' + Date.now(), { cache: 'reload' }); } catch (e) { /* sigue */ }
+    linea.textContent = `bajando de nuevo… ${++hechos} de ${ARCHIVOS.length}`;
+  }
+  try {
+    const v = await (await fetch('version.txt?v=' + Date.now(), { cache: 'reload' })).text();
+    document.getElementById('version').textContent = 'versión: ' + v.trim();
+  } catch (e) { document.getElementById('version').textContent = 'versión: no se pudo leer'; }
+
+  di('listo');
+  const ir = document.getElementById('ir');
+  ir.href = './index.html?v=' + Date.now();
+  ir.textContent = 'Jugar';
+  ir.classList.remove('apagado');
 })();
 </script>
 </body></html>
