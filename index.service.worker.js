@@ -4,9 +4,9 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1790088077|2554695';
+const CACHE_VERSION = '1790988505|2423570';
 /** @type {string} */
-const CACHE_PREFIX = 'Entrega Voladora-sw-cache-';
+const CACHE_PREFIX = 'Pizzapult-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 /** @type {string} */
 const OFFLINE_URL = 'index.offline.html';
@@ -29,6 +29,10 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
 	event.waitUntil(self.clients.claim());
+	// Agregado por tools/exportar_web.py: la caché de un nombre anterior del
+	// juego tiene otro prefijo y la limpieza de abajo no la ve.
+	event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) =>
+		['Entrega Voladora-sw-cache-'].some((p) => key.startsWith(p))).map((key) => caches.delete(key)))));
 	event.waitUntil(caches.keys().then(
 		function (keys) {
 			// Remove old caches.

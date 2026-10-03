@@ -1,4 +1,4 @@
-# Entrega Voladora — build web (PWA)
+# Pizzapult — build web (PWA)
 
 Sólo la **build web** del juego, para poder jugarlo desde el teléfono sin
 instalar nada. El código vive en un repo aparte y privado.
@@ -18,9 +18,11 @@ guardado y abre al instante, incluso sin conexión.
 
 ## Cómo se regenera
 
-Desde el repo del código:
+Desde el repo del código, siempre con el paso propio (no con el export pelado
+de Godot: le agrega al service worker lo que hace falta para que una versión
+nueva llegue):
 
-    godot --headless --path . --export-release "Web" builds/web/index.html
+    python tools/exportar_web.py --publicar
 
 El preset `Web` va **sin hilos** a propósito: la variante con hilos exige las
 cabeceras COOP/COEP, que GitHub Pages no deja configurar.
